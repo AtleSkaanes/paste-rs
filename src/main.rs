@@ -15,6 +15,10 @@ async fn main() {
 
     match args.subcommand {
         cli::SubCommand::Send { content, is_file } => {
+            let content = match content {
+                Some(c) => c,
+                None => cli::get_stdin("content"),
+            };
             let data = match is_file {
                 true => {
                     let path = PathBuf::from(content);
@@ -58,6 +62,11 @@ async fn main() {
             output,
             extenstion,
         } => {
+            let id = match id {
+                Some(id) => id,
+                None => cli::get_stdin("id"),
+            };
+
             let id = match extenstion {
                 Some(ext) => format!("{}.{}", id, ext),
                 None => id,
@@ -80,6 +89,11 @@ async fn main() {
             std::process::exit(0);
         }
         cli::SubCommand::Delete { id } => {
+            let id = match id {
+                Some(id) => id,
+                None => cli::get_stdin("id"),
+            };
+
             let id = api::strip_id(&id).to_string();
             match api::send_delete_request(id.clone()).await {
                 Ok(_) => {
@@ -99,6 +113,11 @@ async fn main() {
             }
         }
         cli::SubCommand::Open { id, extenstion } => {
+            let id = match id {
+                Some(id) => id,
+                None => cli::get_stdin("id"),
+            };
+
             let url = api::to_url(&id, extenstion.as_deref());
             let open_result = open::that(url.clone());
 
