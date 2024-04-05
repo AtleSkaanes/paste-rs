@@ -8,7 +8,7 @@ use colored::Colorize;
 
 use crate::api;
 
-pub fn read_from_file(path: PathBuf) -> String {
+pub fn read_text_from_file(path: PathBuf) -> String {
     if !path.exists() {
         println!(
             "{}",
@@ -26,29 +26,10 @@ pub fn read_from_file(path: PathBuf) -> String {
         std::process::exit(1);
     }
 
-    let mut file = match OpenOptions::new().read(true).open(path) {
-        Ok(f) => f,
-        Err(_) => {
-            println!("{}", "\u{7}[ERROR]: Coulnd't open the file".red().bold());
-            std::process::exit(1);
-        }
-    };
-
-    let mut buf = String::new();
-    let read_result = file.read_to_string(&mut buf);
-
-    if read_result.is_err() {
-        println!(
-            "{}",
-            "\u{7}[ERROR]: Couldn't read from the file".red().bold()
-        );
-        std::process::exit(1);
-    }
-
-    buf
+    read_file_to_string(path)
 }
 
-pub fn write_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
+pub fn save_text_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
     let mut path = path;
 
     if let Err(e) = fs::create_dir_all(path.clone().parent().unwrap()) {
@@ -85,8 +66,14 @@ pub fn write_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
         }
     }
 
+    write_to_file(path.clone(), text, true);
+
+    path
+}
+
+pub fn write_to_file(path: PathBuf, content: String, can_create: bool) {
     let mut file = match OpenOptions::new()
-        .create(true)
+        .create(can_create)
         .write(true)
         .truncate(true)
         .open(path.clone())
@@ -96,7 +83,7 @@ pub fn write_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
             println!(
                 "{}",
                 format!(
-                    "\u{7}[ERROR]: Failed to create the output file at {:?}!\nInfo: {}",
+                    "\u{7}[ERROR]: Failed to open file at {:?}!\nInfo: {}",
                     path,
                     e.to_string()
                 )
@@ -107,7 +94,7 @@ pub fn write_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
         }
     };
 
-    if let Err(e) = file.write_all(text.as_bytes()) {
+    if let Err(e) = file.write_all(content.as_bytes()) {
         println!(
             "{}",
             format!(
@@ -119,6 +106,63 @@ pub fn write_to_file(path: PathBuf, text: String, id: &str) -> PathBuf {
             .bold()
         )
     }
+}
 
-    path
+pub fn append_to_file(path: PathBuf, content: &str) {
+    let mut file = match OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(path.clone())
+    {
+        Ok(f) => f,
+        Err(e) => {
+            println!(
+                "{}",
+                format!(
+                    "\u{7}[ERROR]: Failed to open file at {:?}!\nInfo: {}",
+                    path,
+                    e.to_string()
+                )
+                .red()
+                .bold(),
+            );
+            std::process::exit(1);
+        }
+    };
+
+    if let Err(e) = file.write_all(content.as_bytes()) {
+        println!(
+            "{}",
+            format!(
+                "\u{7}[ERROR]: Failed to write to the output file at {:?}!\nInfo: {}",
+                path,
+                e.to_string()
+            )
+            .red()
+            .bold()
+        )
+    }
+}
+
+pub fn read_file_to_string(path: PathBuf) -> String {
+    let mut file = match OpenOptions::new().read(true).open(path) {
+        Ok(f) => f,
+        Err(_) => {
+            println!("{}", "\u{7}[ERROR]: Coulnd't open the file".red().bold());
+            std::process::exit(1);
+        }
+    };
+
+    let mut buf = String::new();
+    let read_result = file.read_to_string(&mut buf);
+
+    if read_result.is_err() {
+        println!(
+            "{}",
+            "\u{7}[ERROR]: Couldn't read from the file".red().bold()
+        );
+        std::process::exit(1);
+    }
+
+    buf
 }

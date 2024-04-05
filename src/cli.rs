@@ -19,13 +19,15 @@ pub enum SubCommand {
         content: Option<String>,
         #[arg(short = 'f', long = "file")]
         is_file: bool,
+        #[arg(short, long)]
+        description: Option<String>,
     },
     Get {
         id: Option<String>,
         #[arg(short, long)]
         output: Option<PathBuf>,
         #[arg(short, long)]
-        extenstion: Option<String>,
+        extension: Option<String>,
     },
     Delete {
         id: Option<String>,
@@ -33,8 +35,9 @@ pub enum SubCommand {
     Open {
         id: Option<String>,
         #[arg(short, long)]
-        extenstion: Option<String>,
+        extension: Option<String>,
     },
+    List,
 }
 
 pub fn get_stdin(input_name: &str) -> String {
