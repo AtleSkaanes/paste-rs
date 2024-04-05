@@ -11,18 +11,24 @@ pub struct CliArgs {
 
 #[derive(Subcommand, Debug)]
 pub enum SubCommand {
-    SendFile {
-        file_path: PathBuf,
-    },
     Send {
         content: String,
+        #[arg(short = 'f', long = "file")]
+        is_file: bool,
     },
     Get {
-        id: u64,
+        id: String,
         #[arg(short, long)]
         output: Option<PathBuf>,
+        #[arg(short, long)]
+        extenstion: Option<String>,
+    },
+    Delete {
+        id: String,
     },
     Open {
-        id: u64,
+        id: String,
+        #[arg(short, long)]
+        extenstion: Option<String>,
     },
 }
